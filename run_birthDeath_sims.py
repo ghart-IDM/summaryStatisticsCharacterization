@@ -24,10 +24,10 @@ import matplotlib.pyplot as plt
 #-------------------------------------------------------------------------------
 
 # Tree generation
-birth_rate_bounds = [ 0.25, 2 ]
-death_rate_bounds = [ 0.25, 2 ]
+birth_rate_bounds = [ 0.25, 10 ]
+death_rate_bounds = [ 0.25, 10 ]
 step_size = 0.25
-n_leaves_bounds = [50, 100]
+n_leaves_bounds = [50, 500]
 step_size_leaves = 50   
 
 # Summary statistics
@@ -35,9 +35,9 @@ path_to_summary_statistics = '/home/ghart/Codes/phyloModels/phylomodels/features
 
 
 # Optimization
-n_trials = 10  # Number of runs
-n_jobs   = 4  # Number of cores for parallel runs; use -1 for all cores
-name     = "20210929-tree-summary-stats-rev0"
+n_trials = 2500  # Number of runs
+n_jobs   = 6  # Number of cores for parallel runs; use -1 for all cores
+name     = "birthDeath/tree-summary-stats-rev0"
 storage  = f'sqlite:///{name}.db'
 #-------------------------------------------------------------------------------
 

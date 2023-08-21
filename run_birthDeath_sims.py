@@ -11,6 +11,7 @@ import ngesh
 import optuna
 
 import phylomodels.features.trees
+from getTreeStats import getTreeStats
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -23,18 +24,19 @@ import matplotlib.pyplot as plt
 #-------------------------------------------------------------------------------
 
 # Tree generation
-birth_rate_bounds = [ 0.25, 10 ]
-death_rate_bounds = [ 0.25, 10 ]
+birth_rate_bounds = [ 0.25, 2 ]
+death_rate_bounds = [ 0.25, 2 ]
 step_size = 0.25
-n_leaves = 50   
+n_leaves_bounds = [50, 100]
+step_size_leaves = 50   
 
 # Summary statistics
-path_to_summary_statistics = '/home/rnunez/work/phylomodels/envs/phylomodels-20210921-trees/phyloModels/phylomodels/features/trees'
+path_to_summary_statistics = '/home/ghart/Codes/phyloModels/phylomodels/features/trees'
 
 
 # Optimization
-n_trials = 2500  # Number of runs
-n_jobs   = 8  # Number of cores for parallel runs; use -1 for all cores
+n_trials = 10  # Number of runs
+n_jobs   = 4  # Number of cores for parallel runs; use -1 for all cores
 name     = "20210929-tree-summary-stats-rev0"
 storage  = f'sqlite:///{name}.db'
 #-------------------------------------------------------------------------------
@@ -51,13 +53,14 @@ def run_experiment( params=None ):
     # Set parameters
     if params == None:
         params = {}
-    min_leaves = params.get( 'n_leaves'  , n_leaves )
-    birth      = params.get( 'birth_rate', 1        )
-    death      = params.get( 'death_rate', 0.5      )
-    seed       = params.get( 'rand_seed' , 0        )
+    min_leaves = params.get( 'n_leaves'  , 50  )
+    birth      = params.get( 'birth_rate', 1   )
+    death      = params.get( 'death_rate', 0.5 )
+    seed       = params.get( 'rand_seed' , 0   )
 
     # Generate tree
-    print( "... generating tree with birth = ", birth, " and death = ", death )
+    print( "... generating tree with birth = ", birth, ", death = ", death,
+          ", and n_leaves = ", min_leaves)
     tic = time.time()
     try:
         tree = ngesh.random_tree.gen_tree( min_leaves = min_leaves,
@@ -73,31 +76,26 @@ def run_experiment( params=None ):
     
     # Compute summary statistics
     print( "... computing summary statistics for tree with birth = ", birth, 
-           " and death = ", death )
-    tree_summary_stats = pandas.DataFrame() 
-    i=0
-    for filename in os.listdir( path_to_summary_statistics ):
-        if filename.startswith("__") or (not filename.endswith(".py")):
-            continue
+           ", death = ", death, ", and n_leaves = ", min_leaves )
+    # tree_summary_stats = pandas.DataFrame() 
+
+    # for filename in os.listdir( path_to_summary_statistics ):
+    #     if filename.startswith("__") or (not filename.endswith(".py")):
+    #         continue
         
-        # Get pointer to function
-        function_name = filename[:-3]
-        this_module = getattr( phylomodels.features.trees, function_name)
-        this_function = getattr( this_module, function_name )
+    #     # Get pointer to function
+    #     function_name = filename[:-3]
+    #     this_module = getattr( phylomodels.features.trees, function_name)
+    #     this_function = getattr( this_module, function_name )
         
-        # Call function
-        #print( '    computing ', function_name )
-        out = this_function(tree)
+    #     # Call function
+    #     #print( '    computing ', function_name )
+    #     out = this_function(tree)
         
-        # Update consolidated dataframe
-        tree_summary_stats = pandas.concat( [tree_summary_stats, out], axis=1 )
+    #     # Update consolidated dataframe
+    #     tree_summary_stats = pandas.concat( [tree_summary_stats, out], axis=1 )
        
-        '''
-        i+=1
-        if i>3:
-           break
-        '''
-        
+    tree_summary_stats = getTreeStats(tree)    
     # Finalize and return    
     status = 0
     return status, tree_summary_stats, toc
@@ -118,6 +116,11 @@ def objective(trial):
                                                 death_rate_bounds[0], 
                                                 death_rate_bounds[1],
                                                 step = step_size
+                                               )
+    params['n_leaves']   = trial.suggest_int(    'n_leaves', 
+                                                 n_leaves_bounds[0], 
+                                                 n_leaves_bounds[1],
+                                                 step = step_size_leaves
                                                )
     params['rand_seed' ] = trial.number
     
@@ -144,6 +147,7 @@ def make_study():
     
     birth_num = 1+int( (birth_rate_bounds[1] - birth_rate_bounds[0])/step_size )
     death_num = 1+int( (death_rate_bounds[1] - death_rate_bounds[0])/step_size )
+    leaf_num = 1+int( (n_leaves_bounds[1] - n_leaves_bounds[0])/step_size_leaves )
     
     search_space = { 'birth_rate': numpy.linspace( birth_rate_bounds[0], 
                                                    birth_rate_bounds[1],
@@ -152,7 +156,11 @@ def make_study():
                      'death_rate': numpy.linspace( death_rate_bounds[0], 
                                                    death_rate_bounds[1],
                                                    death_num
-                                                  )
+                                                  ),
+                     'n_leaves': numpy.linspace(   n_leaves_bounds[0], 
+                                                   n_leaves_bounds[1],
+                                                   leaf_num
+                                                  ),
                     }
     
     sampler = optuna.samplers.GridSampler( search_space )
@@ -168,8 +176,6 @@ def make_study():
 
 
 if __name__ == '__main__':
-    #run_sim()
-    #compare_scenarios()
     
     make_study()
     study = optuna.load_study(storage=storage, study_name=name)

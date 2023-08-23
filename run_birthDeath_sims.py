@@ -10,11 +10,8 @@ import pandas
 import ngesh
 import optuna
 
-import phylomodels.features.trees
 from getTreeStats import getTreeStats
 
-import matplotlib
-import matplotlib.pyplot as plt
 
 
 
@@ -37,7 +34,7 @@ path_to_summary_statistics = '/home/ghart/Codes/phyloModels/phylomodels/features
 # Optimization
 n_trials = 2500  # Number of runs
 n_jobs   = 6  # Number of cores for parallel runs; use -1 for all cores
-name     = "birthDeath/tree-summary-stats-rev0"
+name     = "birthDeath-tree-summary-stats-rev0"
 storage  = f'sqlite:///{name}.db'
 #-------------------------------------------------------------------------------
 
@@ -77,23 +74,6 @@ def run_experiment( params=None ):
     # Compute summary statistics
     print( "... computing summary statistics for tree with birth = ", birth, 
            ", death = ", death, ", and n_leaves = ", min_leaves )
-    # tree_summary_stats = pandas.DataFrame() 
-
-    # for filename in os.listdir( path_to_summary_statistics ):
-    #     if filename.startswith("__") or (not filename.endswith(".py")):
-    #         continue
-        
-    #     # Get pointer to function
-    #     function_name = filename[:-3]
-    #     this_module = getattr( phylomodels.features.trees, function_name)
-    #     this_function = getattr( this_module, function_name )
-        
-    #     # Call function
-    #     #print( '    computing ', function_name )
-    #     out = this_function(tree)
-        
-    #     # Update consolidated dataframe
-    #     tree_summary_stats = pandas.concat( [tree_summary_stats, out], axis=1 )
        
     tree_summary_stats = getTreeStats(tree)    
     # Finalize and return    

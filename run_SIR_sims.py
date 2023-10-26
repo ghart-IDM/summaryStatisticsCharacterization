@@ -121,7 +121,7 @@ def run_experiment( params=None ):
     incidenceData['cum_incidence'] = numpy.cumsum(incidenceData['incidence'])
     incidenceData['prevalence'] = incidenceData['cum_incidence']
     incidenceData.loc[duration:, 'prevalence'] = incidenceData['cum_incidence'][duration:].values - incidenceData['cum_incidence'][:-duration].values
-    incidenceData['R_eff'] = 0
+    incidenceData['R_eff'] = 0.0
 
     for row in incidenceData.iterrows():
         incidenceData.loc[row[0], 'R_eff'] = aggTransData.loc[numpy.logical_and(
@@ -130,7 +130,7 @@ def run_experiment( params=None ):
                                               ), 'num_trans'].mean()
     bins = numpy.arange(incidenceData['timeInfected'].max()+bin_width, step=bin_width)
     bins[0] = -1
-    binned_incidenceData = incidenceData.groupby(pandas.cut(incidenceData.timeInfected, bins)).mean()
+    binned_incidenceData = incidenceData.groupby(pandas.cut(incidenceData.timeInfected, bins), observed=False).mean()
     
     print( "... building tree with ", params)
     lineList['id'] = lineList['id'].astype(str)
@@ -145,19 +145,19 @@ def run_experiment( params=None ):
         trees[i] = transform_transToPhyloTree(trees[i])
     # combined transmission tree(s)
     tree = transform_joinTrees(trees, method='constant_coalescent')
-    tree.add_feature('time_bin', str(tree.time // bin_width))
+    tree.add_feature('time_bin', str(int(tree.time // bin_width)))
     for node in tree.get_descendants('levelorder'):
-        node.add_feature('time_bin', str(node.time // bin_width))
+        node.add_feature('time_bin', str(int(node.time // bin_width)))
 
     # Compute summary statistics
     print( "... computing summary statistics for tree with ", params )
     tree_summary_stats = getTreeStats(tree, 'time_bin')
     
     for i in range(len(bins)):
-        tree_summary_stats['params_incidence' + str(i)] = binned_incidenceData.loc[i, 'incidence']
-        tree_summary_stats['params_cum_incidence' + str(i)] = binned_incidenceData.loc[i, 'cum_incidence']
-        tree_summary_stats['params_prevalence' + str(i)] = binned_incidenceData.loc[i, 'prevalence']
-        tree_summary_stats['params_R_eff' + str(i)] = binned_incidenceData.loc[i, 'R_eff']
+        tree_summary_stats['params_incidence_' + str(int(i))] = binned_incidenceData.loc[i, 'incidence']
+        tree_summary_stats['params_cum_incidence_' + str(int(i))] = binned_incidenceData.loc[i, 'cum_incidence']
+        tree_summary_stats['params_prevalence_' + str(int(i))] = binned_incidenceData.loc[i, 'prevalence']
+        tree_summary_stats['params_R_eff_1' + str(int(i))] = binned_incidenceData.loc[i, 'R_eff']
 
     # Finalize and return    
     status = 0

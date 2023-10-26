@@ -28,7 +28,7 @@ def getTreeStats(tree, attr=None):
     if attr:
         kwargs = {'attr': attr}
         kwargs.update(unique_node_attr(tree, attr))
-        print('attribute values: ', attr)
+        #print('attribute values: ', kwargs)
     
     print('Running branch length summary statistics.')
     # All branch lengths

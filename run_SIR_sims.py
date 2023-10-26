@@ -66,6 +66,9 @@ def run_experiment( params=None ):
        cmd += " --c:" + str(params["contacts"])
     if "infection_duration" in params:
         cmd += " --d:" + str(params["infection_duration"])
+        duration = int(params['infection_duration'])
+    else:
+        duration = int(3)
     cmd += " --t:150"
     if "R0" in params:
         cmd += " --r0:" + str(params["R0"])
@@ -77,6 +80,11 @@ def run_experiment( params=None ):
     cmd += " --output:transmissions" + str(seed) + ".bin"
     outputFile = 'transmissions' + str(seed) + '.bin'
 
+    if "bin_width" in params:
+        bin_width = int(params['bin_width'])
+    else:
+        bin_width = int(7)
+        
     # Run sim
     tic = time.time()
 
@@ -89,12 +97,40 @@ def run_experiment( params=None ):
     lineList = lineList.reshape((rows,3))
     lineList = pandas.DataFrame(data=lineList, index=None, columns=['infectedById', 'id', 'timeInfected'])
     os.system('rm transmissions' + str(seed) + '.bin')
-
+    
     # Check if an outbreak actually happened
-    if lineList.shape[0] < 15:
+    if lineList.shape[0] < 10:
         print( "... ERROR: running sim with birth ", params )
         return -1, None, None
     toc = time.time() - tic
+    
+    # Get epi data
+    aggTransData = lineList.groupby(['infectedById'], as_index=False).agg({'id': 'count',
+                                                                            'timeInfected': ['min', 'max']})
+    aggTransData.columns = aggTransData.columns.map("".join)
+    aggTransData.rename(columns={'idcount': 'num_trans',
+                                 'timeInfectedmin': 'infectious_begin',
+                                 'timeInfectedmax': 'infectious_end'}, inplace=True)
+
+    incidenceData = lineList.groupby(['timeInfected'], as_index=False)['id'].agg('count')
+    incidenceData.rename(columns={'id': 'incidence'}, inplace=True)
+    temp = pandas.DataFrame({'timeInfected': numpy.arange(incidenceData['timeInfected'].max()+1)})
+    incidenceData = temp.merge(incidenceData, on='timeInfected', how='outer')
+    del temp
+    incidenceData.fillna(0, inplace=True)
+    incidenceData['cum_incidence'] = numpy.cumsum(incidenceData['incidence'])
+    incidenceData['prevalence'] = incidenceData['cum_incidence']
+    incidenceData.loc[duration:, 'prevalence'] = incidenceData['cum_incidence'][duration:].values - incidenceData['cum_incidence'][:-duration].values
+    incidenceData['R_eff'] = 0
+
+    for row in incidenceData.iterrows():
+        incidenceData.loc[row[0], 'R_eff'] = aggTransData.loc[numpy.logical_and(
+                                              aggTransData['infectious_begin']<=row[1]['timeInfected'],
+                                              aggTransData['infectious_end']>=row[1]['timeInfected']
+                                              ), 'num_trans'].mean()
+    bins = numpy.arange(incidenceData['timeInfected'].max()+bin_width, step=bin_width)
+    bins[0] = -1
+    binned_incidenceData = incidenceData.groupby(pandas.cut(incidenceData.timeInfected, bins)).mean()
     
     print( "... building tree with ", params)
     lineList['id'] = lineList['id'].astype(str)
@@ -109,10 +145,19 @@ def run_experiment( params=None ):
         trees[i] = transform_transToPhyloTree(trees[i])
     # combined transmission tree(s)
     tree = transform_joinTrees(trees, method='constant_coalescent')
+    tree.add_feature('time_bin', str(tree.time // bin_width))
+    for node in tree.get_descendants('levelorder'):
+        node.add_feature('time_bin', str(node.time // bin_width))
 
     # Compute summary statistics
     print( "... computing summary statistics for tree with ", params )
-    tree_summary_stats = getTreeStats(tree)
+    tree_summary_stats = getTreeStats(tree, 'time_bin')
+    
+    for i in range(len(bins)):
+        tree_summary_stats['params_incidence' + str(i)] = binned_incidenceData.loc[i, 'incidence']
+        tree_summary_stats['params_cum_incidence' + str(i)] = binned_incidenceData.loc[i, 'cum_incidence']
+        tree_summary_stats['params_prevalence' + str(i)] = binned_incidenceData.loc[i, 'prevalence']
+        tree_summary_stats['params_R_eff' + str(i)] = binned_incidenceData.loc[i, 'R_eff']
 
     # Finalize and return    
     status = 0

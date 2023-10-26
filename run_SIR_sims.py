@@ -28,22 +28,22 @@ param_names = ['contacts',
                'R0',
                'sample_time',
                'sample_fraction']
-param_bounds = {'contacts':           [4, 8],
-                'population_size':    [100, 300],
-                'infection_duration': [3, 11],
-                'R0':                 [2, 8],
+param_bounds = {'contacts':           [4, 24],
+                'population_size':    [50, 50],
+                'infection_duration': [3, 13],
+                'R0':                 [2, 12],
                 'sample_time':        [0, 14],
-                'sample_fraction':    [.5, 1]}
+                'sample_fraction':    [.2, 1]}
 param_step_size = {'contacts':           4,
-                   'population_size':    100,
-                   'infection_duration': 4,
-                   'R0':                 4,
-                   'sample_time':        7,
-                   'sample_fraction':    0.25}
+                   'population_size':    50,
+                   'infection_duration': 2,
+                   'R0':                 2,
+                   'sample_time':        3.5,
+                   'sample_fraction':    0.2}
 
 
 # Optimization
-n_trials = 25  # Number of runs
+n_trials = 96  # Number of runs
 n_jobs   = 2  # Number of cores for parallel runs; use -1 for all cores
 name     = "SIR-tree-summary-stats-rev0"
 storage  = f'sqlite:///{name}.db'
@@ -74,8 +74,8 @@ def run_experiment( params=None ):
         cmd += " --seed:" + str(seed)      
     else:
         seed = 0
-    cmd += " --output:transmissions" + str(seed) + ".bin"
     outputFile = 'transmissions' + str(seed) + '.bin'
+    cmd += " --output:" + outputFile
 
     # Run sim
     tic = time.time()
@@ -91,8 +91,8 @@ def run_experiment( params=None ):
     os.system('rm transmissions' + str(seed) + '.bin')
 
     # Check if an outbreak actually happened
-    if lineList.shape[0] < 15:
-        print( "... ERROR: running sim with birth ", params )
+    if lineList.shape[0] < 10:
+        print( "... ERROR: no outbreak running sim with ", params )
         return -1, None, None
     toc = time.time() - tic
     

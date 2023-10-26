@@ -24,7 +24,7 @@ from getTreeStats import getTreeStats
 birth_rate_bounds = [ 0.25, 10 ]
 death_rate_bounds = [ 0.25, 10 ]
 step_size = 0.25
-n_leaves_bounds = [50, 250]
+n_leaves_bounds = [250, 250]
 step_size_leaves = 50   
 
 # Summary statistics
@@ -32,7 +32,7 @@ path_to_summary_statistics = '/home/ghart/Codes/phyloModels/phylomodels/features
 
 
 # Optimization
-n_trials = 250  # Number of runs
+n_trials = 1000 # Number of runs
 n_jobs   = 1  # Number of cores for parallel runs; use -1 for all cores
 name     = "birthDeath-tree-summary-stats-rev0"
 storage  = f'sqlite:///{name}.db'
@@ -57,7 +57,7 @@ def run_experiment( params=None ):
 
     # Generate tree
     print( "... generating tree with birth = ", birth, ", death = ", death,
-          ", and n_leaves = ", min_leaves)
+            ", and n_leaves = ", min_leaves, ' Trial: ', seed )
     tic = time.time()
     try:
         tree = ngesh.random_tree.gen_tree( min_leaves = min_leaves,
@@ -73,7 +73,7 @@ def run_experiment( params=None ):
     
     # Compute summary statistics
     print( "... computing summary statistics for tree with birth = ", birth, 
-           ", death = ", death, ", and n_leaves = ", min_leaves )
+            ", death = ", death, ", and n_leaves = ", min_leaves, ' Trial: ', seed )
        
     tree_summary_stats = getTreeStats(tree)    
     # Finalize and return    

@@ -6,7 +6,7 @@ Created on Mon Aug 21 13:18:53 2023
 @author: ghart
 """
 import os
-os.environ['OPENBLAS_NUM_THREADS'] = '12'
+os.environ['OPENBLAS_NUM_THREADS'] = '7'
 import numpy as np
 import pandas as pd
 from ete3 import Tree
@@ -20,13 +20,15 @@ from phylomodels.features.trees.helper.get_eigenvalues_adj import get_eigenvalue
 from phylomodels.features.trees.helper.get_distance_mat import get_distance_mat
 from phylomodels.features.trees.helper.get_adjacency_mat import get_adjacency_mat
 
-def getTreeStats(tree):
+def getTreeStats(tree, attr=None):
     tree_id = 'tree'
     treeData = pd.DataFrame( {"tree_id": [tree_id]} ).set_index("tree_id")
     
     kwargs = {}
-    #kwargs = {'attr': 'population'}
-    #kwargs.update(unique_node_attr(tree, 'population'))
+    if attr:
+        kwargs = {'attr': attr}
+        kwargs.update(unique_node_attr(tree, attr))
+        print('attribute values: ', attr)
     
     print('Running branch length summary statistics.')
     # All branch lengths

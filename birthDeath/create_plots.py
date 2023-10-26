@@ -44,6 +44,7 @@ def main():
     columns = study_df.columns.str.startswith("params_") | study_df.columns.str.startswith("user_attrs_")
     data = study_df.loc[:, columns].copy()
     data = data.drop( columns = ["user_attrs_time_tree_generation"] )
+    data.columns = data.columns.str.replace("^user_attrs_params_", "params_")
     params = data.iloc[0:2,:].filter(regex='^params_').columns.str.replace("params_","").to_list()
     features = data.iloc[0:2,:].filter(regex='^user_attrs_').columns.str.replace("user_attrs_", "").to_list()
     data.columns = data.columns.str.replace("params_", "")

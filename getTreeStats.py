@@ -5,6 +5,8 @@ Created on Mon Aug 21 13:18:53 2023
 
 @author: ghart
 """
+import os
+os.environ['OPENBLAS_NUM_THREADS'] = '7'
 import numpy as np
 import pandas as pd
 from ete3 import Tree

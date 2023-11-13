@@ -22,9 +22,9 @@ import matplotlib.pyplot as plt
 
 # Optimization
 #name     = "20210929-tree-summary-stats-test"
-name     = "20210929-tree-summary-stats-rev0"
+name     = "birthDeath-tree-summary-stats-rev0"
 storage  = f'sqlite:///{name}.db'
-dir_figure = 'figures'
+dir_figure = 'figures/birthDeath'
 
 seaborn.set(font_scale=1.8)
 #-------------------------------------------------------------------------------
@@ -51,9 +51,9 @@ def main():
     data.columns = data.columns.str.replace("user_attrs_", "")
 
 
-    print(data)    
+    # print(data)    
 
-    print(data.columns)
+    # print(data.columns)
 
     build_report( data, params, features )
 
@@ -172,7 +172,8 @@ def single_stat_analysis( stat_name, data, params):
     # Draw box plot
     fig_sp, ax_sp = plt.subplots( n_params, 1, figsize=(16,16) )
     for i, param in enumerate(params):
-        seaborn.boxplot( data, x=param, y=stat_name, ax=ax_sp[i] )
+        my_plot = seaborn.boxplot( data, x=param, y=stat_name, ax=ax_sp[i] )
+        my_plot.set_xticklabels(my_plot.get_xticklabels(), rotation=90)
     ax_sp[0].set_title(stat_name)
     fig_sp.tight_layout()
     fig_sp.savefig( os.path.join(dir_figure, 'box-plot--' + stat_name + '.png' ))
@@ -193,9 +194,9 @@ def single_stat_analysis( stat_name, data, params):
                                          )
                 ax_cp[i,j].set_xlabel(params[i])
                 ax_cp[i,j].set_ylabel(params[j])
-    fig_cp.colorbar( cntr, ax=ax_cp )
     fig_cp.suptitle(stat_name)#, fontsize=18)
-    # fig_cp.tight_layout()
+    fig_cp.tight_layout()
+    fig_cp.colorbar( cntr, ax=ax_cp )
     fig_cp.savefig( os.path.join(dir_figure, 'contour-plot--' + stat_name + '.png' ))
     plt.close(fig_cp)
     

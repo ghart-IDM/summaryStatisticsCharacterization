@@ -106,7 +106,8 @@ def multi_stat_analysis( data, params, features ):
             model = ols(stat_name + " ~ " + " + ".join(params), data=stat_df).fit()
             scores.loc[stat_name, "R"] = model.rsquared**.5
 
-    
+    scores.dropna(inplace=True)
+    scores.index = scores.index.str.replace('_topology', '_unweighted')
     scores["R_abs"] = scores["R"].abs()
     scores = scores.sort_values( "R_abs", ascending=False )    #.replace([numpy.inf, -numpy.inf], numpy.nan, inplace=True) \
                    
@@ -123,8 +124,8 @@ def multi_stat_analysis( data, params, features ):
     plt.savefig(os.path.join(dir_figure, 'correlations.png'))
     plt.close(fig_corr)
 
-
-    fig_table, ax_table = plt.subplots( 1, 1, figsize=(16,20) )
+    # Fixing the annot to have all values may require downgrading MATPLOTLIB to 3.7.3
+    fig_table, ax_table = plt.subplots( 1, 1, figsize=(17,20) )
     seaborn.heatmap( scores.drop(columns="R_abs"),
                      vmin       = -1,
                      vmax       = 1,
@@ -141,14 +142,16 @@ def multi_stat_analysis( data, params, features ):
 
     fig_pc, ax_pc = plt.subplots( 1, 1, figsize=(24,24) )
     corr = data.corr()
+    corr.dropna(inplace=True, how='all')
+    corr.dropna(inplace=True, how='all', axis=1)
     cax = ax_pc.matshow( corr, cmap="BrBG", vmin=-1, vmax=1 )
     fig_pc.colorbar(cax)
-    ticks = numpy.arange( 0, len(data.columns), 1 )
+    ticks = numpy.arange( 0, len(corr.columns), 1 )
     ax_pc.set_xticks( ticks )
     plt.xticks( rotation=90 )
     ax_pc.set_yticks( ticks )
-    ax_pc.set_xticklabels( data.columns )
-    ax_pc.set_yticklabels( data.columns )
+    ax_pc.set_xticklabels( corr.columns )
+    ax_pc.set_yticklabels( corr.columns )
     
     fig_pc.tight_layout()
     plt.savefig(os.path.join(dir_figure, 'correlations_features.png'))

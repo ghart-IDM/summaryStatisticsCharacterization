@@ -44,6 +44,7 @@ def main():
     columns = study_df.columns.str.startswith("params_") | study_df.columns.str.startswith("user_attrs_")
     data = study_df.loc[:, columns].copy()
     data = data.drop( columns = ["user_attrs_time_tree_generation"] )
+    data.columns = data.columns.str.replace('_topology', '_unweighted')
     data.columns = data.columns.str.replace("^user_attrs_params_", "params_")
     params = data.iloc[0:2,:].filter(regex='^params_').columns.str.replace("params_","").to_list()
     features = data.iloc[0:2,:].filter(regex='^user_attrs_').columns.str.replace("user_attrs_", "").to_list()
@@ -107,7 +108,7 @@ def multi_stat_analysis( data, params, features ):
             scores.loc[stat_name, "R"] = model.rsquared**.5
 
     scores.dropna(inplace=True)
-    scores.index = scores.index.str.replace('_topology', '_unweighted')
+    # scores.index = scores.index.str.replace('_topology', '_unweighted')
     scores["R_abs"] = scores["R"].abs()
     scores = scores.sort_values( "R_abs", ascending=False )    #.replace([numpy.inf, -numpy.inf], numpy.nan, inplace=True) \
                    

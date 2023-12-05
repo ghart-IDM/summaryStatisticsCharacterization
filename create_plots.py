@@ -2,6 +2,7 @@
 Generate figures based on the results rendered by the run_experiments.py script.
 '''
 import os
+import re
 import numpy 
 import pandas
 
@@ -19,12 +20,13 @@ import matplotlib.pyplot as plt
 #-------------------------------------------------------------------------------
 # Parameters
 #-------------------------------------------------------------------------------
+# Model
+model = 'SIR'
 
 # Optimization
-#name     = "20210929-tree-summary-stats-test"
-name     = "20210929-tree-summary-stats-rev0"
+name     = model + "-tree-summary-stats-rev0"
 storage  = f'sqlite:///{name}.db'
-dir_figure = 'figures'
+dir_figure = os.path.join('figures', model)
 
 seaborn.set(font_scale=1.8)
 #-------------------------------------------------------------------------------
@@ -44,16 +46,22 @@ def main():
     columns = study_df.columns.str.startswith("params_") | study_df.columns.str.startswith("user_attrs_")
     data = study_df.loc[:, columns].copy()
     data = data.drop( columns = ["user_attrs_time_tree_generation"] )
-    data.columns = data.columns.str.replace("^user_attrs_params_", "params_")
+    data.columns = data.columns.str.replace('_topology', '_unweighted')
+    #data.columns = data.columns.str.replace("^user_attrs_params_", "params_")
+    time_dependent_params = data.iloc[0:2,:].filter(regex='^user_attrs_params_').columns.str.replace("user_attrs_params_","").to_list()
     params = data.iloc[0:2,:].filter(regex='^params_').columns.str.replace("params_","").to_list()
     features = data.iloc[0:2,:].filter(regex='^user_attrs_').columns.str.replace("user_attrs_", "").to_list()
+    time_dependent_features = [x for x in features if re.match('_[0-9]+', x)]
+    features = [x for x in features if not re.match('_[0-9]+', x)]
     data.columns = data.columns.str.replace("params_", "")
     data.columns = data.columns.str.replace("user_attrs_", "")
 
+    print(features)
+    print(time_dependent_features)
 
-    print(data)    
+    # print(data)    
 
-    print(data.columns)
+    # print(data.columns)
 
     build_report( data, params, features )
 
@@ -106,7 +114,8 @@ def multi_stat_analysis( data, params, features ):
             model = ols(stat_name + " ~ " + " + ".join(params), data=stat_df).fit()
             scores.loc[stat_name, "R"] = model.rsquared**.5
 
-    
+    scores.dropna(inplace=True)
+    # scores.index = scores.index.str.replace('_topology', '_unweighted')
     scores["R_abs"] = scores["R"].abs()
     scores = scores.sort_values( "R_abs", ascending=False )    #.replace([numpy.inf, -numpy.inf], numpy.nan, inplace=True) \
                    
@@ -123,8 +132,8 @@ def multi_stat_analysis( data, params, features ):
     plt.savefig(os.path.join(dir_figure, 'correlations.png'))
     plt.close(fig_corr)
 
-
-    fig_table, ax_table = plt.subplots( 1, 1, figsize=(16,20) )
+    # Fixing the annot to have all values may require downgrading MATPLOTLIB to 3.7.3
+    fig_table, ax_table = plt.subplots( 1, 1, figsize=(17,20) )
     seaborn.heatmap( scores.drop(columns="R_abs"),
                      vmin       = -1,
                      vmax       = 1,
@@ -141,14 +150,16 @@ def multi_stat_analysis( data, params, features ):
 
     fig_pc, ax_pc = plt.subplots( 1, 1, figsize=(24,24) )
     corr = data.corr()
+    corr.dropna(inplace=True, how='all')
+    corr.dropna(inplace=True, how='all', axis=1)
     cax = ax_pc.matshow( corr, cmap="BrBG", vmin=-1, vmax=1 )
     fig_pc.colorbar(cax)
-    ticks = numpy.arange( 0, len(data.columns), 1 )
+    ticks = numpy.arange( 0, len(corr.columns), 1 )
     ax_pc.set_xticks( ticks )
     plt.xticks( rotation=90 )
     ax_pc.set_yticks( ticks )
-    ax_pc.set_xticklabels( data.columns )
-    ax_pc.set_yticklabels( data.columns )
+    ax_pc.set_xticklabels( corr.columns )
+    ax_pc.set_yticklabels( corr.columns )
     
     fig_pc.tight_layout()
     plt.savefig(os.path.join(dir_figure, 'correlations_features.png'))
@@ -172,7 +183,8 @@ def single_stat_analysis( stat_name, data, params):
     # Draw box plot
     fig_sp, ax_sp = plt.subplots( n_params, 1, figsize=(16,16) )
     for i, param in enumerate(params):
-        seaborn.boxplot( data, x=param, y=stat_name, ax=ax_sp[i] )
+        my_plot = seaborn.boxplot( data, x=param, y=stat_name, ax=ax_sp[i] )
+        my_plot.set_xticklabels(my_plot.get_xticklabels(), rotation=90)
     ax_sp[0].set_title(stat_name)
     fig_sp.tight_layout()
     fig_sp.savefig( os.path.join(dir_figure, 'box-plot--' + stat_name + '.png' ))
@@ -193,9 +205,9 @@ def single_stat_analysis( stat_name, data, params):
                                          )
                 ax_cp[i,j].set_xlabel(params[i])
                 ax_cp[i,j].set_ylabel(params[j])
-    fig_cp.colorbar( cntr, ax=ax_cp )
     fig_cp.suptitle(stat_name)#, fontsize=18)
-    # fig_cp.tight_layout()
+    fig_cp.tight_layout()
+    fig_cp.colorbar( cntr, ax=ax_cp )
     fig_cp.savefig( os.path.join(dir_figure, 'contour-plot--' + stat_name + '.png' ))
     plt.close(fig_cp)
     

@@ -2,6 +2,7 @@
 Generate figures based on the results rendered by the run_experiments.py script.
 '''
 import os
+import re
 import numpy 
 import pandas
 
@@ -19,12 +20,13 @@ import matplotlib.pyplot as plt
 #-------------------------------------------------------------------------------
 # Parameters
 #-------------------------------------------------------------------------------
+# Model
+model = 'SIR'
 
 # Optimization
-#name     = "20210929-tree-summary-stats-test"
-name     = "birthDeath-tree-summary-stats-rev0"
+name     = model + "-tree-summary-stats-rev0"
 storage  = f'sqlite:///{name}.db'
-dir_figure = 'figures/birthDeath'
+dir_figure = os.path.join('figures', model)
 
 seaborn.set(font_scale=1.8)
 #-------------------------------------------------------------------------------
@@ -45,12 +47,17 @@ def main():
     data = study_df.loc[:, columns].copy()
     data = data.drop( columns = ["user_attrs_time_tree_generation"] )
     data.columns = data.columns.str.replace('_topology', '_unweighted')
-    data.columns = data.columns.str.replace("^user_attrs_params_", "params_")
+    #data.columns = data.columns.str.replace("^user_attrs_params_", "params_")
+    time_dependent_params = data.iloc[0:2,:].filter(regex='^user_attrs_params_').columns.str.replace("user_attrs_params_","").to_list()
     params = data.iloc[0:2,:].filter(regex='^params_').columns.str.replace("params_","").to_list()
     features = data.iloc[0:2,:].filter(regex='^user_attrs_').columns.str.replace("user_attrs_", "").to_list()
+    time_dependent_features = [x for x in features if re.match('_[0-9]+', x)]
+    features = [x for x in features if not re.match('_[0-9]+', x)]
     data.columns = data.columns.str.replace("params_", "")
     data.columns = data.columns.str.replace("user_attrs_", "")
 
+    print(features)
+    print(time_dependent_features)
 
     # print(data)    
 

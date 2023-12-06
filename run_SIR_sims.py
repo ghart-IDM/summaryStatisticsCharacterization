@@ -29,7 +29,7 @@ param_names = ['contacts',
                'sample_time',
                'sample_fraction']
 param_bounds = {'contacts':           [4, 24],
-                'population_size':    [50, 50],
+                'population_size':    [200, 200],
                 'infection_duration': [3, 13],
                 'R0':                 [2, 12],
                 'sample_time':        [0, 14],
@@ -43,8 +43,8 @@ param_step_size = {'contacts':           4,
 
 
 # Optimization
-n_trials = 25  # Number of runs
-n_jobs   = 2  # Number of cores for parallel runs; use -1 for all cores
+n_trials = 5*5400  # Number of runs
+n_jobs   = 1  # Number of cores for parallel runs; use -1 for all cores
 name     = "SIR-tree-summary-stats-rev0"
 storage  = f'sqlite:///{name}.db'
 #-------------------------------------------------------------------------------

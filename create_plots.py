@@ -15,7 +15,8 @@ import seaborn
 import matplotlib
 import matplotlib.pyplot as plt
 
-
+import warnings
+warnings.filterwarnings("ignore")
 
 #-------------------------------------------------------------------------------
 # Parameters
@@ -37,27 +38,35 @@ def main():
 
     # Load study and get dataframe
     study = optuna.load_study(storage=storage, study_name=name)
-    study_df = study.trials_dataframe()
+    data = study.trials_dataframe()
     
     # # Remove failed sims
-    # study_df = study_df.loc[study_df.state=='COMPLETE', :]
-    # study_df = study_df.loc[~numpy.isinf(study_df.value), :]
+    # data = data.loc[data.state=='COMPLETE', :]
+    # data = data.loc[~numpy.isinf(data.value), :]
     
-    columns = study_df.columns.str.startswith("params_") | study_df.columns.str.startswith("user_attrs_")
-    data = study_df.loc[:, columns].copy()
+    columns = data.columns.str.startswith("params_") | data.columns.str.startswith("user_attrs_")
+    data = data.loc[:, columns]
     data = data.drop( columns = ["user_attrs_time_tree_generation"] )
     data.columns = data.columns.str.replace('_topology', '_unweighted')
+    data.to_csv(model+'TrialData.csv', index=False)
     #data.columns = data.columns.str.replace("^user_attrs_params_", "params_")
     time_dependent_params = data.iloc[0:2,:].filter(regex='^user_attrs_params_').columns.str.replace("user_attrs_params_","").to_list()
     params = data.iloc[0:2,:].filter(regex='^params_').columns.str.replace("params_","").to_list()
+    data.columns = data.columns.str.replace("user_attrs_params_", "")
+    #print(data.columns.to_list())
     features = data.iloc[0:2,:].filter(regex='^user_attrs_').columns.str.replace("user_attrs_", "").to_list()
-    time_dependent_features = [x for x in features if re.match('_[0-9]+', x)]
-    features = [x for x in features if not re.match('_[0-9]+', x)]
+    time_dependent_features = [x for x in features if re.search('_[0-9]+$', x)]
+    features = [x for x in features if not re.search('_[0-9]+$', x)]
     data.columns = data.columns.str.replace("params_", "")
     data.columns = data.columns.str.replace("user_attrs_", "")
+    #print(data.columns.to_list())
+    #print(time_dependent_params)
+    #print(time_dependent_features)
+    #print(params)
+    #return
 
-    print(features)
-    print(time_dependent_features)
+    #print(features)
+    #print(time_dependent_features)
 
     # print(data)    
 
@@ -65,6 +74,11 @@ def main():
 
     build_report( data, params, features )
 
+    #print(data.columns)
+    #print(params + time_dependent_params + time_dependent_features)
+
+    data = data.loc[:, params + time_dependent_params + time_dependent_features]
+    data.to_csv('timeDependentData.csv', index=False)
 
 
     return
@@ -79,7 +93,7 @@ def build_report( data, params, features ):
     # Individual Statistics
     print('scores.index = ', scores.index)
     n_params = len(params)
-    for stat_name in scores.index[n_params:]:
+    for stat_name in features:
         print( '... processing: ', stat_name )
         stat_df = data.loc[ :, params + [stat_name ]]
         if stat_df is not None:
@@ -103,7 +117,7 @@ def multi_stat_analysis( data, params, features ):
 
 
     # Compute scores
-    for stat_name in data.columns[n_params:]:
+    for stat_name in features:
         stat_df = data.loc[ :, params + [stat_name ]]
         if stat_df is not None:
 
@@ -149,7 +163,7 @@ def multi_stat_analysis( data, params, features ):
 
 
     fig_pc, ax_pc = plt.subplots( 1, 1, figsize=(24,24) )
-    corr = data.corr()
+    corr = data[features].corr()
     corr.dropna(inplace=True, how='all')
     corr.dropna(inplace=True, how='all', axis=1)
     cax = ax_pc.matshow( corr, cmap="BrBG", vmin=-1, vmax=1 )
@@ -184,8 +198,12 @@ def single_stat_analysis( stat_name, data, params):
     fig_sp, ax_sp = plt.subplots( n_params, 1, figsize=(16,16) )
     for i, param in enumerate(params):
         my_plot = seaborn.boxplot( data, x=param, y=stat_name, ax=ax_sp[i] )
-        my_plot.set_xticklabels(my_plot.get_xticklabels(), rotation=90)
+        if model == 'birthDeath':
+            my_plot.set_xticklabels(my_plot.get_xticklabels(), rotation=90)
+        else:
+            my_plot.set_ylabel(None)
     ax_sp[0].set_title(stat_name)
+    fig_sp.supylabel(stat_name)
     fig_sp.tight_layout()
     fig_sp.savefig( os.path.join(dir_figure, 'box-plot--' + stat_name + '.png' ))
     plt.close(fig_sp)

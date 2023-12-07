@@ -154,10 +154,10 @@ def run_experiment( params=None ):
     tree_summary_stats = getTreeStats(tree, 'time_bin')
     
     for i in range(len(bins)):
-        tree_summary_stats['params_incidence_' + str(int(i))] = binned_incidenceData.loc[i, 'incidence']
-        tree_summary_stats['params_cum_incidence_' + str(int(i))] = binned_incidenceData.loc[i, 'cum_incidence']
-        tree_summary_stats['params_prevalence_' + str(int(i))] = binned_incidenceData.loc[i, 'prevalence']
-        tree_summary_stats['params_R_eff_1' + str(int(i))] = binned_incidenceData.loc[i, 'R_eff']
+        tree_summary_stats['params_incidence_' + str(int(i))] = binned_incidenceData.iloc[i, 'incidence']
+        tree_summary_stats['params_cum_incidence_' + str(int(i))] = binned_incidenceData.iloc[i, 'cum_incidence']
+        tree_summary_stats['params_prevalence_' + str(int(i))] = binned_incidenceData.iloc[i, 'prevalence']
+        tree_summary_stats['params_R_eff_' + str(int(i))] = binned_incidenceData.iloc[i, 'R_eff']
 
     # Finalize and return    
     status = 0

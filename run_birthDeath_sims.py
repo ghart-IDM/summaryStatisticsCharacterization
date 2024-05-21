@@ -32,7 +32,7 @@ path_to_summary_statistics = '/home/ghart/Codes/phyloModels/phylomodels/features
 
 
 # Optimization
-n_trials = 1000 # Number of runs
+n_trials = 1345#1*1600 # Number of runs
 n_jobs   = 1  # Number of cores for parallel runs; use -1 for all cores
 name     = "birthDeath-tree-summary-stats-rev0"
 storage  = f'sqlite:///{name}.db'

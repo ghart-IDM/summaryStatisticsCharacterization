@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore")
 # Parameters
 #-------------------------------------------------------------------------------
 # Model
-model = 'SIR'
+model = 'birthDeath'
 
 # Optimization
 name     = model + "-tree-summary-stats-rev0"

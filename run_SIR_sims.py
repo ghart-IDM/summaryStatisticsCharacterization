@@ -29,7 +29,7 @@ param_names = ['contacts',
                'sample_time',
                'sample_fraction']
 param_bounds = {'contacts':           [4, 24],
-                'population_size':    [200, 200],
+                'population_size':    [250, 250],
                 'infection_duration': [3, 13],
                 'R0':                 [2, 12],
                 'sample_time':        [0, 14],
@@ -83,7 +83,7 @@ def run_experiment( params=None ):
     if "bin_width" in params:
         bin_width = int(params['bin_width'])
     else:
-        bin_width = int(7)
+        bin_width = int(5)
         
     # Run sim
     tic = time.time()
@@ -153,11 +153,12 @@ def run_experiment( params=None ):
     print( "... computing summary statistics for tree with ", params )
     tree_summary_stats = getTreeStats(tree, 'time_bin')
     
-    for i in range(len(bins)):
-        tree_summary_stats['params_incidence_' + str(int(i))] = binned_incidenceData.iloc[i, 'incidence']
-        tree_summary_stats['params_cum_incidence_' + str(int(i))] = binned_incidenceData.iloc[i, 'cum_incidence']
-        tree_summary_stats['params_prevalence_' + str(int(i))] = binned_incidenceData.iloc[i, 'prevalence']
-        tree_summary_stats['params_R_eff_' + str(int(i))] = binned_incidenceData.iloc[i, 'R_eff']
+    for i in range(len(bins)-1):
+        time_step = binned_incidenceData.iloc[i]
+        tree_summary_stats['params_incidence_' + str(int(i))] = time_step['incidence']
+        tree_summary_stats['params_cum_incidence_' + str(int(i))] = time_step['cum_incidence']
+        tree_summary_stats['params_prevalence_' + str(int(i))] = time_step['prevalence']
+        tree_summary_stats['params_R_eff_' + str(int(i))] = time_step['R_eff']
 
     # Finalize and return    
     status = 0

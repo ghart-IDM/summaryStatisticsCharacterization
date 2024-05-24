@@ -36,190 +36,14 @@ storage  = f'sqlite:///{name}.db'
 dir_figure = os.path.join('figures', model)
 csv_fileName = model + 'TrialData.csv'
 
-seaborn.set(font_scale=1.8)
+seaborn.set_theme(font_scale=1.8)
 corr_method = 'spearman'
 max_lag = 2
 #-------------------------------------------------------------------------------
 
 
-#------------------------------------------------------------------------------
-# Statistic renaming
-#------------------------------------------------------------------------------
-stats_mapping = {'max_branch_length':              'Max branch length',                     	# Branch Length
-                 'max_ex_branch_length':           'Max ext. branch length',                 	# Branch Length
-                 'max_in_branch_length':           'Max int. branch length',                 	# Branch Length
-                 'max_ratio_branch_length':        'Max ratio of branchs',                   	# Branch Length
-                 'mean_branch_length':             'Mean branch length',                     	# Branch Length
-                 'mean_ex_branch_length':          'Mean ext. branch length',               	# Branch Length
-                 'mean_in_branch_length':          'Mean int. branch length',               	# Branch Length
-                 'mean_ratio_branch_length':       'Mean ratio of branch lengths',              # Branch Length
-                 'median_branch_length':           'Median branch length',        	            # Branch Length
-                 'median_ex_branch_length':        'Median ext. branch length',               	# Branch Length
-                 'median_in_branch_length':        'Median int. branch length',               	# Branch Length
-                 'median_ratio_branch_length':     'Median ratio of branch lengths',            # Branch Length
-                 'min_branch_length':              'Min branch length',                       	# Branch Length
-                 'min_ex_branch_length':           'Min ext. branch length',                	# Branch Length
-                 'min_in_branch_length':           'Min int. branch length',                	# Branch Length
-                 'min_ratio_branch_length':        'Min ratio of branch lengths',             	# Branch Length
-                 'std_branch_length':              'Std. dev. branch length',                	# Branch Length
-                 'std_ex_branch_length':           'Std. dev. ext. branch length',            	# Branch Length
-                 'std_in_branch_length':           'Std. dev. int. branch length',              # Branch Length
-                 'std_ratio_branch_length':        'Std. dev. rotio of branch lengths',     	# Branch Length
-                 'B1':                             'B1',                                       	# Depth
-                 'B2':                             'B2',                                       	# Depth
-                 'max_height':                     'Maximum height',                           	# Depth
-                 'mean_height':                    'Mean height',                              	# Depth
-                 'min_height':                     'Minimum height',                           	# Depth
-                 'sackin':                         'Sackin index',                             	# Depth
-                 'sackin_var':                     'Sackin variance',                          	# Depth
-                 'cherries':                       'Cherries',                                 	# Local
-                 'double_cherries':                'Double cherries',                          	# Local
-                 'fourprong':                      'Fourprongs',                            	# Local
-                 'frac_basal':                     'Fraction basal',                        	# Local
-                 'mean_LBI':                       'Mean LBI',                                	# Local
-                 'mean_NN_dist':                   'Mean nearest neighbor dist. weighted',   	# Local
-                 'mean_NN_dist_unweighted':        'Mean nearest neighbor dist. unweighted',	# Local
-                 'pitchforks':                     'Pitchforks',                            	# Local
-                 'max_lineages':                   'Maximum lineages',                      	# LTT
-                 'mean_b_time':                    'Mean branching time',                   	# LTT
-                 'mean_s_time':                    'Mean sampling time',                    	# LTT
-                 'slope_1':                        'Slope 1',                               	# LTT
-                 'slope_2':                        'Slope 2',                               	# LTT
-                 'slope_ratio':                    'Slope ratio',                           	# LTT
-                 't_max_lineages':                 'Time of maximum lineages',              	# LTT
-                 'betweenness_max':                'Max betweenness',                       	# Network Science
-                 'closeness_max':                  'Max closeness weighted',                 	# Network Science
-                 'closeness_max_unweighted':       'Max closeness unweighted',              	# Network Science
-                 'diameter':                       'Diameter weighted',                     	# Network Science
-                 'diameter_unweighted':            'Diameter unweighted',                   	# Network Science
-                 'eigenvector_max':                'Eigenvector centrality weighted',       	# Network Science
-                 'eigenvector_max_unweighted':     'Eigenvector centrality unweighted',       	# Network Science
-                 'mean_path':                      'Mean path weighted',                    	# Network Science
-                 'mean_path_unweighted':           'Mean path unweighted',                  	# Network Science
-                 'eigen_gap':                      'Eigen gap weighted',                    	# Spectral
-                 'eigen_gap_unweighted':           'Eigen gap unweighted',                  	# Spectral
-                 'eigenvalue_max_adj':             'Max adj. eigenvalue weighted',          	# Spectral
-                 'eigenvalue_max_adj_unweighted':  'Max adj. eigenvalue unweighted',         	# Spectral
-                 'eigenvalue_max_dLap':            'Max dist. lap. eigenvalue weighted',    	# Spectral
-                 'eigenvalue_max_dLap_unweighted': 'Max dist. lap. eigenvalue unweighted',     	# Spectral
-                 'eigenvalue_max_lap':             'Max lap. eigenvalue weighted',          	# Spectral
-                 'eigenvalue_max_lap_unweighted':  'Max lap. eigenvalue unweighted',        	# Spectral
-                 'eigenvalue_min_adj':             'Min adj. eigenvalue weighted',          	# Spectral
-                 'eigenvalue_min_adj_unweighted':  'Min adj. eigenvalue unweighted',        	# Spectral
-                 'eigenvalue_min_lap':             'Min lap. eigenvalue weighted',          	# Spectral
-                 'eigenvalue_min_lap_unweighted':  'Min lap. eigenvalue unweighted',        	# Spectral
-                 'kurtosis':                       'Kurtosis weighted',                     	# Spectral
-                 'kurtosis_unweighted':            'Kurtosis unweighted',                   	# Spectral
-                 'skewness':                       'Skewness weighted',                     	# Spectral
-                 'skewness_unweighted':            'Skewness unweighted',                   	# Spectral
-                 'WD_ratio':                       'Maximum width-to-depth ratio',          	# Topology
-                 'colless':                        'Colless index',                         	# Topology
-                 'frac_imbalance':                 'Fration of imbalance',                  	# Topology
-                 'frac_ladder':                    'Fraction of ladders',                   	# Topology
-                 'max_dW':                         'Maximum midth change',                  	# Topology
-                 'max_ladder':                     'Maximum ladder size',                   	# Topology
-                 'mean_imbalance_ratio':           'Mean imbalance ratio'                   	# Topology
-} 
-
-stat_grouping = {'max_branch_length':              'Branch Length',
-                 'max_ex_branch_length':           'Branch Length',
-                 'max_in_branch_length':           'Branch Length',
-                 'max_ratio_branch_length':        'Branch Length',
-                 'mean_branch_length':             'Branch Length',
-                 'mean_ex_branch_length':          'Branch Length',
-                 'mean_in_branch_length':          'Branch Length',
-                 'mean_ratio_branch_length':       'Branch Length',
-                 'median_branch_length':           'Branch Length',
-                 'median_ex_branch_length':        'Branch Length',
-                 'median_in_branch_length':        'Branch Length',
-                 'median_ratio_branch_length':     'Branch Length',
-                 'min_branch_length':              'Branch Length',
-                 'min_ex_branch_length':           'Branch Length',
-                 'min_in_branch_length':           'Branch Length',
-                 'min_ratio_branch_length':        'Branch Length',
-                 'std_branch_length':              'Branch Length',
-                 'std_ex_branch_length':           'Branch Length',
-                 'std_in_branch_length':           'Branch Length',
-                 'std_ratio_branch_length':        'Branch Length',
-                 'B1':                             'Depth',
-                 'B2':                             'Depth',
-                 'max_height':                     'Depth',
-                 'mean_height':                    'Depth',
-                 'min_height':                     'Depth',
-                 'sackin':                         'Depth',
-                 'sackin_var':                     'Depth',
-                 'cherries':                       'Local',
-                 'double_cherries':                'Local',
-                 'fourprong':                      'Local',
-                 'frac_basal':                     'Local',
-                 'mean_LBI':                       'Local',
-                 'mean_NN_dist':                   'Local',
-                 'mean_NN_dist_unweighted':        'Local',
-                 'pitchforks':                     'Local',
-                 'max_lineages':                   'LTT',
-                 'mean_b_time':                    'LTT',
-                 'mean_s_time':                    'LTT',
-                 'slope_1':                        'LTT',
-                 'slope_2':                        'LTT',
-                 'slope_ratio':                    'LTT',
-                 't_max_lineages':                 'LTT',
-                 'betweenness_max':                'Network Science',
-                 'closeness_max':                  'Network Science',
-                 'closeness_max_unweighted':       'Network Science',
-                 'diameter':                       'Network Science',
-                 'diameter_unweighted':            'Network Science',
-                 'eigenvector_max':                'Network Science',
-                 'eigenvector_max_unweighted':     'Network Science',
-                 'mean_path':                      'Network Science',
-                 'mean_path_unweighted':           'Network Science',
-                 'eigen_gap':                      'Spectral',
-                 'eigen_gap_unweighted':           'Spectral',
-                 'eigenvalue_max_adj':             'Spectral',
-                 'eigenvalue_max_adj_unweighted':  'Spectral',
-                 'eigenvalue_max_dLap':            'Spectral',
-                 'eigenvalue_max_dLap_unweighted': 'Spectral',
-                 'eigenvalue_max_lap':             'Spectral',
-                 'eigenvalue_max_lap_unweighted':  'Spectral',
-                 'eigenvalue_min_adj':             'Spectral',
-                 'eigenvalue_min_adj_unweighted':  'Spectral',
-                 'eigenvalue_min_lap':             'Spectral',
-                 'eigenvalue_min_lap_unweighted':  'Spectral',
-                 'kurtosis':                       'Spectral',
-                 'kurtosis_unweighted':            'Spectral',
-                 'skewness':                       'Spectral',
-                 'skewness_unweighted':            'Spectral',
-                 'WD_ratio':                       'Topology',
-                 'colless':                        'Topology',
-                 'frac_imbalance':                 'Topology',
-                 'frac_ladder':                    'Topology',
-                 'max_dW':                         'Topology',
-                 'max_ladder':                     'Topology',
-                 'mean_imbalance_ratio':           'Topology'
-                 }
-
-group_colors = {'Branch Length': 'b',
-                'Depth': 'g',
-                'Local': 'r',
-                'LTT': 'c',
-                'Network Science': 'm',
-                'Spectral': 'y',
-                'Topology': 'b'
-                }
-
-param_mapping = {'birth_rate': 'Birth rate',
-                 'death_rate': 'Death rate',
-                 'n_leaves':   'Num. leaves',
-                 'R0': '$R_0$',
-                 'contacts': 'Number\nof\ncontacts',
-                 'infection_duration': 'Infectious\nduration',
-                 'population_size': 'Total\npop.\nsize',
-                 'sample_fraction': 'Sample\ncoverage',
-                 'sample_time': 'Sample\ndelay',
-                 'R_eff': '$R_e$',
-                 'cum_incidence': 'Cumulative\nincidence',
-                 'incidence': 'Incidence',
-                 'prevalence': 'Prevalence'
-                 }
+# import renaming variables
+from staticRenaming import param_mapping, stats_mapping, group_colors
 
 def main():
 
@@ -265,7 +89,7 @@ def main():
     data['sim'] = numpy.arange(data.shape[0])
     
 
-    # build_report( data, params, features )
+    build_report( data, params, features )
 
     if model == 'SIR':
         data = data.loc[:, ['sim'] + params + time_dependent_params + time_dependent_features]
@@ -281,7 +105,7 @@ def main():
         time_dependent_params = numpy.unique([x.rpartition('_')[0] for x in time_dependent_params]).tolist()
     
         # Multi-stat analysis
-        multi_stat_analysis_time_dependent( data, time_dependent_params, time_dependent_features )
+        # multi_stat_analysis_time_dependent( data, time_dependent_params, time_dependent_features )
         
         # # Individual Statistics
         # n_params = len(time_dependent_params)
@@ -302,15 +126,15 @@ def build_report( data, params, features ):
     scores = multi_stat_analysis( data, params, features )
     
 
-    # Individual Statistics
-    print('scores.index = ', scores.index)
-    n_params = len(params)
-    for stat_name in features:
-        print( '... processing: ', stat_name )
-        stat_df = data.loc[ :, params + [stat_name ]]
-        if stat_df is not None:
-            single_stat_analysis( stat_name, stat_df.fillna(0).clip(-1e6, 1e6),
-                                 params)
+    # # Individual Statistics
+    # print('scores.index = ', scores.index)
+    # n_params = len(params)
+    # for stat_name in features:
+    #     print( '... processing: ', stat_name )
+    #     stat_df = data.loc[ :, params + [stat_name ]]
+    #     if stat_df is not None:
+    #         single_stat_analysis( stat_name, stat_df.fillna(0).clip(-1e6, 1e6),
+    #                              params)
 
     return
 
@@ -323,7 +147,7 @@ def multi_stat_analysis( data, params, features ):
     gof_name = "Multiple\ncorrelation"
     rename_feature = []
     for feature in features:
-        rename_feature.append(stats_mapping[feature])
+        rename_feature.append(stats_mapping[feature]['displayName'])
     scores = pandas.DataFrame( columns=["group"] + [param_mapping[x] for x in params] + [gof_name],
                               index=rename_feature, dtype=numpy.float64)
     scores['name'] = rename_feature
@@ -335,14 +159,14 @@ def multi_stat_analysis( data, params, features ):
     for stat_name in features:
         stat_df = data.loc[ :, params + [stat_name ]]
         if stat_df is not None:
-            scores.loc[stats_mapping[stat_name], "group"] = stat_grouping[stat_name]
+            scores.loc[stats_mapping[stat_name]['displayName'], "group"] = stats_mapping[stat_name]['group']
 
             for param in params:
-                scores.loc[stats_mapping[stat_name], param_mapping[param]] = stat_df[stat_name].corr( stat_df[param], method=corr_method )
+                scores.loc[stats_mapping[stat_name]['displayName'], param_mapping[param]] = stat_df[stat_name].corr( stat_df[param], method=corr_method )
                 
 
             model = ols(stat_name + " ~ " + " + ".join(params), data=stat_df).fit()
-            scores.loc[stats_mapping[stat_name], gof_name] = model.rsquared**.5
+            scores.loc[stats_mapping[stat_name]['displayName'], gof_name] = model.rsquared**.5
 
     scores.dropna(inplace=True)
     # scores.index = scores.index.str.replace('_topology', '_unweighted')
@@ -427,20 +251,21 @@ def multi_stat_analysis( data, params, features ):
 
 
     # fig_pc, ax_pc = plt.subplots( 1, 1, figsize=(24,24) )
-    corr = data[features].rename(columns=stats_mapping).corr(method=corr_method)
+    corr = data[features].rename(columns={stat_name: properties['displayName'] for (stat_name, properties) in stats_mapping.items()}).corr(method=corr_method)
     corr.dropna(inplace=True, how='all')
     corr.dropna(inplace=True, how='all', axis=1)
-    cg = seaborn.clustermap(corr, cmap="RdBu", vmin=-1, vmax=1, figsize=(24,24) )
+    cg = seaborn.clustermap(corr, cmap="RdBu", vmin=-1, vmax=1, figsize=(24,24),
+                            yticklabels=True, xticklabels=True)
     cg.ax_row_dendrogram.set_visible(False)
     cg.ax_col_dendrogram.set_visible(False)
     # cax = ax_pc.matshow( corr, cmap="BrBG", vmin=-1, vmax=1 )
     # fig_pc.colorbar(cax)
     ticks = numpy.arange( 0, len(corr.columns), 1 )
-    cg.ax_heatmap.set_xticks( ticks )
+    # cg.ax_heatmap.set_xticks( ticks )
     # plt.xticks( rotation=90 )
-    cg.ax_heatmap.set_yticks( ticks )
-    cg.ax_heatmap.set_xticklabels( corr.columns )
-    cg.ax_heatmap.set_yticklabels( corr.columns )
+    # cg.ax_heatmap.set_yticks( ticks )
+    # cg.ax_heatmap.set_xticklabels( corr.columns )
+    # cg.ax_heatmap.set_yticklabels( corr.columns )
     yticklabels = cg.ax_heatmap.get_yticklabels()
     for label in yticklabels:
         label.set_color(group_colors[scores.loc[label.get_text(), 'group']])
@@ -516,7 +341,7 @@ def multi_stat_analysis_time_dependent( data, params, features ):
     gof_name = "Multiple\ncorrelation"
     rename_feature = []
     for feature in features:
-        rename_feature.append(stats_mapping[feature])
+        rename_feature.append(stats_mapping[feature]['displayName'])
     scores = pandas.DataFrame( columns=["group"] + [param_mapping[x] for x in params] + [gof_name],
                               index=rename_feature, dtype=numpy.float64)
     
@@ -535,8 +360,8 @@ def multi_stat_analysis_time_dependent( data, params, features ):
     for stat_name in features:
         stat_df = data.loc[ :, ['sim'] + params + [stat_name ]]
         if stat_df is not None:
-            scores.loc[stats_mapping[stat_name], "group"] = stat_grouping[stat_name]
-            lags.loc[stats_mapping[stat_name], "group"] = stat_grouping[stat_name]
+            scores.loc[stats_mapping[stat_name]['displayName'], "group"] = stats_mapping[stat_name]['group']
+            lags.loc[stats_mapping[stat_name]['displayName'], "group"] = stats_mapping[stat_name]['group']
 
             for param in params:
                 lag = 0
@@ -566,25 +391,26 @@ def multi_stat_analysis_time_dependent( data, params, features ):
                         corr = corr_temp
                         lag = lag_i
                 
-                scores.loc[stats_mapping[stat_name], param_mapping[param]] = corr
-                lags.loc[stats_mapping[stat_name], param_mapping[param]] = lag
+                scores.loc[stats_mapping[stat_name]['displayName'], param_mapping[param]] = corr
+                lags.loc[stats_mapping[stat_name]['displayName'], param_mapping[param]] = lag
             model = ols(stat_name + " ~ " + " + ".join(params), data=stat_df).fit()
-            scores.loc[stats_mapping[stat_name], gof_name] = model.rsquared**.5
+            scores.loc[stats_mapping[stat_name]['displayName'], gof_name] = model.rsquared**.5
                 
     # # Compute scores
     # for stat_name in features:
     #     stat_df = data.loc[ :, params + [stat_name ]]
     #     if stat_df is not None:
-    #         scores.loc[stats_mapping[stat_name], "group"] = stat_grouping[stat_name]
+    #         scores.loc[stats_mapping[stat_name]['displayName'], "group"] = stats_mapping[stat_name]['group']
 
     #         for param in params:
-    #             scores.loc[stats_mapping[stat_name], param_mapping[param]] = stat_df[stat_name].corr( stat_df[param], method=corr_method )    
+    #             scores.loc[stats_mapping[stat_name]['displayName'], param_mapping[param]] = stat_df[stat_name].corr( stat_df[param], method=corr_method )    
 
     #         model = ols(stat_name + " ~ " + " + ".join(params), data=stat_df).fit()
     #         scores.loc[stat_name, gof_name] = model.rsquared**.5
     
-    # scores = pandas.read_csv('scores_time_dependent.csv')
-    # lags = pandas.read_csv('lags_time_dependent.csv')
+    # scores = pandas.read_csv('scores_time_dependent.csv', index_col='name')
+    # lags = pandas.read_csv('lags_time_dependent.csv', index_col='name')
+
     scores.dropna(inplace=True)
     # scores.index = scores.index.str.replace('_topology', '_unweighted')
     scores["R_abs"] = scores[gof_name].abs()
@@ -630,7 +456,7 @@ def multi_stat_analysis_time_dependent( data, params, features ):
     
 
     # Fixing the annot to have all values may require downgrading MATPLOTLIB to 3.7.3
-    fig_table, ax_table = plt.subplots( 1, 1, figsize=(17,20) )
+    fig_table, ax_table = plt.subplots( 1, 1, figsize=(19.5,20) )
     seaborn.heatmap( scores.drop(columns=["R_abs", "group", gof_name]),
                      vmin       = -1,
                      vmax       = 1,
@@ -640,7 +466,7 @@ def multi_stat_analysis_time_dependent( data, params, features ):
                      ax         = ax_table
                     )
     ticks = numpy.arange(0.5, len(scores.index), 1)
-    ax_table.set_title('Summary Statistics vs. ' + title_name + ' Model Parameters: Time Dependent Correlation Analysis\n')
+    ax_table.set_title('Summary Statistics vs. ' + title_name + ' Model Parameters:\nTime Dependent Correlation Analysis\n')
     ax_table.xaxis.tick_top()
     ax_table.xaxis.set_label_position('top')
     ax_table.set_ylabel('')
@@ -715,47 +541,47 @@ def multi_stat_analysis_time_dependent( data, params, features ):
     # lags.to_csv('lags_time_dependent.csv')
 
 
-    fig_table, ax_table = plt.subplots( 1, 1, figsize=(22,35) )
-    seaborn.heatmap( scores.drop(columns=["R_abs", "group"]),
-                     vmin       = -1,
-                     vmax       = 1,
-                     cmap       = "RdBu",
-                     annot      = True, 
-                     linewidths = .5, 
-                     ax         = ax_table
-                    )
-    ticks = numpy.arange(0.5, len(scores.index), 1)
-    ax_table.set_title('Summary Statistics vs. ' + title_name + ' Model Parameters: Correlation Analysis\n')
-    ax_table.xaxis.tick_top()
-    ax_table.xaxis.set_label_position('top')
-    # xticklabels = ax_table.get_xticklabels()
-    # for label in xticklabels:
-    #     label.set_text(param_mapping[label.get_text()])
-    ax_table.set_ylabel('')
-    ax_table.set_yticks( ticks )
-    ax_table.set_yticklabels( scores.index )
-    # Set text color by group
-    yticklabels = ax_table.get_yticklabels()
-    for label in yticklabels:
-        label.set_color(group_colors[scores.loc[label.get_text(), 'group']])
-    # Create grouping axis
-    ax2 = ax_table.twinx()
-    ax2.tick_params(axis='y', which='minor', rotation=90)
-    ax2.spines['left'].set_position(('axes', -0.5))
-    ax2.spines['left'].set_color('black')
-    ax2.tick_params('y', length=0, width=0, which='minor')
-    ax2.tick_params('y', direction='in', which='major')
-    ax2.yaxis.set_ticks_position("left")
-    ax2.yaxis.set_label_position("left")
-    ax2.set_yticks([0] + counts.loc[::-1, 'count'].cumsum().tolist())
-    ax2.yaxis.set_major_formatter(matplotlib.ticker.NullFormatter())
-    ax2.yaxis.set_minor_locator(matplotlib.ticker.FixedLocator((counts.loc[::-1, 'count'].cumsum() - counts['count'][::-1]/2)))
-    ax2.yaxis.set_minor_formatter(matplotlib.ticker.FixedFormatter(counts.loc[::-1, 'group'].tolist()))
-    for label in ax2.get_yticklabels(minor=True):
-        label.set_verticalalignment('center')
-    fig_table.tight_layout()
-    plt.savefig(os.path.join(dir_figure, 'scoreRanking.png'))
-    plt.close(fig_table)
+    # fig_table, ax_table = plt.subplots( 1, 1, figsize=(22,35) )
+    # seaborn.heatmap( scores.drop(columns=["R_abs", "group"]),
+    #                  vmin       = -1,
+    #                  vmax       = 1,
+    #                  cmap       = "RdBu",
+    #                  annot      = True, 
+    #                  linewidths = .5, 
+    #                  ax         = ax_table
+    #                 )
+    # ticks = numpy.arange(0.5, len(scores.index), 1)
+    # ax_table.set_title('Summary Statistics vs. ' + title_name + ' Model Parameters: Correlation Analysis\n')
+    # ax_table.xaxis.tick_top()
+    # ax_table.xaxis.set_label_position('top')
+    # # xticklabels = ax_table.get_xticklabels()
+    # # for label in xticklabels:
+    # #     label.set_text(param_mapping[label.get_text()])
+    # ax_table.set_ylabel('')
+    # ax_table.set_yticks( ticks )
+    # ax_table.set_yticklabels( scores.index )
+    # # Set text color by group
+    # yticklabels = ax_table.get_yticklabels()
+    # for label in yticklabels:
+    #     label.set_color(group_colors[scores.loc[label.get_text(), 'group']])
+    # # Create grouping axis
+    # ax2 = ax_table.twinx()
+    # ax2.tick_params(axis='y', which='minor', rotation=90)
+    # ax2.spines['left'].set_position(('axes', -0.5))
+    # ax2.spines['left'].set_color('black')
+    # ax2.tick_params('y', length=0, width=0, which='minor')
+    # ax2.tick_params('y', direction='in', which='major')
+    # ax2.yaxis.set_ticks_position("left")
+    # ax2.yaxis.set_label_position("left")
+    # ax2.set_yticks([0] + counts.loc[::-1, 'count'].cumsum().tolist())
+    # ax2.yaxis.set_major_formatter(matplotlib.ticker.NullFormatter())
+    # ax2.yaxis.set_minor_locator(matplotlib.ticker.FixedLocator((counts.loc[::-1, 'count'].cumsum() - counts['count'][::-1]/2)))
+    # ax2.yaxis.set_minor_formatter(matplotlib.ticker.FixedFormatter(counts.loc[::-1, 'group'].tolist()))
+    # for label in ax2.get_yticklabels(minor=True):
+    #     label.set_verticalalignment('center')
+    # fig_table.tight_layout()
+    # plt.savefig(os.path.join(dir_figure, 'scoreRanking.png'))
+    # plt.close(fig_table)
 
 
     return scores
